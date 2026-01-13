@@ -2,6 +2,7 @@ package com.tobiasgraski.testplugin;
 
 import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.server.core.plugin.*;
+import com.tobiasgraski.testplugin.commands.DuelCommand;
 import com.tobiasgraski.testplugin.commands.HelloCommand;
 
 public class Main extends JavaPlugin {
@@ -27,5 +28,6 @@ public class Main extends JavaPlugin {
 
     private void registerHello() {
         getCommandRegistry().registerCommand(new HelloCommand());
+        getCommandRegistry().registerCommand(new DuelCommand());
     }
 }

@@ -1,16 +1,14 @@
 package com.tobiasgraski.testplugin.commands;
 
-import com.hypixel.hytale.component.Ref;
+import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
-import com.hypixel.hytale.server.core.entity.Entity;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
-import com.hypixel.hytale.server.core.universe.Universe;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.tobiasgraski.testplugin.utils.TeleportUtil;
 
 import java.awt.*;
 
@@ -20,6 +18,7 @@ public class DuelCommand extends CommandBase {
 
     public DuelCommand() {
         super("Duel", "Duel another player.");
+        this.setPermissionGroup(GameMode.Adventure);
 
         opponentArg = withRequiredArg("opponent", "opponent", ArgTypes.PLAYER_REF);
     }
@@ -29,29 +28,20 @@ public class DuelCommand extends CommandBase {
         var opponent = ctx.get(opponentArg);
 
         if (ctx.isPlayer()) {
-            var player = (Player) ctx.sender();
+            Player player = (Player) ctx.sender();
 
 //            if (opponent.getUuid().equals(ctx.sender().getUuid())) {
 //                player.sendMessage(Message.raw("You cannot duel yourself").bold(true).color(Color.RED));
 //                return;
 //            }
 
-            player.sendMessage(Message.raw("You have dueled the player").color(Color.RED)
+            player.sendMessage(Message.raw("You sent a duel request to the player").color(Color.RED)
                     .insert(" " + opponent.getUsername()).bold(true).color(Color.GREEN));
 
-            if (player.getReference() != null && player.getReference().isValid()) {
-                var world = player.getWorld();
-
-                if (world != null) {
-                    world.execute(() -> {
-                        var store = player.getReference().getStore();
-                        player.moveTo(player.getReference(), 25d, 10d, 25d, store);
-                    });
-                }
-            }
+            TeleportUtil.teleport(player, 10.0, 200.0, -20.0);
 
             opponent.sendMessage(Message.raw(player.getDisplayName()).bold(true).color(Color.GREEN)
-                    .insert(" " + "has dueled you.").color(Color.RED));
+                    .insert(" " + "sent you a duel request.").color(Color.RED));
         }
     }
 }

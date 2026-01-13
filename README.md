@@ -9,7 +9,7 @@ mvn install:install-file ^
   -DartifactId=hytale-api ^
   -Dversion=early-access ^
   -Dpackaging=jar ^
-  -DgeneratePom=true
+  -DgeneratePom=true```
 
 
 **Building Plugin JAR**

@@ -2,7 +2,7 @@
 
 **Installing the Hytale Dependencies**
 
-Example: ```bat
+Example: ```
 mvn install:install-file ^
   -Dfile="C:\Users\15055\Downloads\HytaleDownloader\Server\HytaleServer.jar" ^
   -DgroupId=io.hytale ^

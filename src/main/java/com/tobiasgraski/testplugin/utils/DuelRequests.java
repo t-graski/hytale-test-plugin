@@ -1,5 +1,9 @@
 package com.tobiasgraski.testplugin.utils;
 
+import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.universe.Universe;
+
+import java.awt.*;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -9,39 +13,83 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class DuelRequests {
 
-    private DuelRequests() {}
+    private static final ConcurrentHashMap<UUID, PendingDuel> pendingByTarget = new ConcurrentHashMap<>();
+    private static final long EXPIRATION_TIME_MS = 10_000;
 
     public static final class PendingDuel {
         public final UUID senderUuid;
         public final String senderName;
         public final UUID targetUuid;
+        public final long timestamp;
 
         public PendingDuel(UUID senderUuid, String senderName, UUID targetUuid) {
             this.senderUuid = senderUuid;
             this.senderName = senderName;
             this.targetUuid = targetUuid;
+            this.timestamp = System.currentTimeMillis();
+
+        }
+
+        public boolean isExpired() {
+            return System.currentTimeMillis() - timestamp > EXPIRATION_TIME_MS;
         }
     }
 
-    private static final ConcurrentHashMap<UUID, PendingDuel> pendingByTarget = new ConcurrentHashMap<>();
+    private DuelRequests() {
+    }
 
-    /** Create/replace the pending request for this target. */
+    /**
+     * Create/replace the pending request for this target.
+     */
     public static void put(UUID targetUuid, UUID senderUuid, String senderName) {
         pendingByTarget.put(targetUuid, new PendingDuel(senderUuid, senderName, targetUuid));
     }
 
-    /** Get pending request for target (without removing). */
+    /**
+     * Get pending request for target (without removing).
+     */
     public static PendingDuel get(UUID targetUuid) {
         return pendingByTarget.get(targetUuid);
     }
 
-    /** Remove and return pending request for target (consume). */
+    /**
+     * Remove and return pending request for target (consume).
+     */
     public static PendingDuel consume(UUID targetUuid) {
-        return pendingByTarget.remove(targetUuid);
+        var pending = pendingByTarget.remove(targetUuid);
+
+        if (pending != null && pending.isExpired()) {
+            return null;
+        }
+
+        return pending;
     }
 
-    /** Remove without returning. */
+    /**
+     * Remove without returning.
+     */
     public static void clear(UUID targetUuid) {
         pendingByTarget.remove(targetUuid);
+    }
+
+    public static void checkExpiredRequests() {
+        pendingByTarget.entrySet().removeIf(entry -> {
+            var pending = entry.getValue();
+
+            if (pending.isExpired()) {
+                notifySenderExpired(pending);
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    private static void notifySenderExpired(PendingDuel pending) {
+        var senderRef = Universe.get().getPlayer(pending.senderUuid);
+
+        if (senderRef != null) {
+            senderRef.sendMessage(Message.raw("Your duel request has expired.").bold(true).color(Color.RED));
+        }
     }
 }

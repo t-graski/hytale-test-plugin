@@ -3,6 +3,7 @@ package com.tobiasgraski.testplugin.utils;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.Inventory;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 
 public final class DuelLoadouts {
 

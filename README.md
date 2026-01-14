@@ -12,4 +12,9 @@ Example: ```mvn install:install-file ^
 
 
 **Building Plugin JAR**
+
 `mvn -U clean package`
+
+**Starting Hytale Server**
+
+`java -jar HytaleServer.jar --assets ../Assets.zip`

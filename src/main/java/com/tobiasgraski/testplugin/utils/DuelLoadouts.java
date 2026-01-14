@@ -21,9 +21,10 @@ public final class DuelLoadouts {
         inv.getArmor().setItemStackForSlot((short) 2, new ItemStack("Armor_Iron_Hands", 1));
         inv.getArmor().setItemStackForSlot((short) 3, new ItemStack("Armor_Iron_Legs", 1));
 
+        inv.setUsingToolsItem(false);
         inv.setActiveHotbarSlot((byte) 0);
 
-        player.setInventory(inv);
+        player.sendInventory();
     }
     
 
@@ -31,7 +32,9 @@ public final class DuelLoadouts {
         Inventory inv = player.getInventory();
         inv.clear();
 
-        player.setInventory(inv);
+        inv.setUsingToolsItem(false);
+        inv.setActiveHotbarSlot((byte) 0);
+        
+        player.sendInventory();
     }
 }
-

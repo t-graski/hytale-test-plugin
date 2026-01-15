@@ -6,7 +6,9 @@ import com.hypixel.hytale.server.core.event.events.ecs.DamageBlockEvent;
 import com.hypixel.hytale.server.core.plugin.*;
 import com.tobiasgraski.testplugin.commands.DuelCommand;
 import com.tobiasgraski.testplugin.commands.HelloCommand;
+import com.tobiasgraski.testplugin.commands.PendingDuelsCommand;
 import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
+import com.tobiasgraski.testplugin.listeners.BlockPlaceSystem;
 import com.tobiasgraski.testplugin.utils.DuelRequests;
 
 import java.util.concurrent.ScheduledFuture;
@@ -32,6 +34,7 @@ public class Main extends JavaPlugin {
     @Override
     protected void start() {
         getEntityStoreRegistry().registerSystem(new BlockBreakSystem());
+        getEntityStoreRegistry().registerSystem(new BlockPlaceSystem());
     }
 
     @Override
@@ -46,5 +49,6 @@ public class Main extends JavaPlugin {
     private void registerHello() {
         getCommandRegistry().registerCommand(new HelloCommand());
         getCommandRegistry().registerCommand(new DuelCommand());
+        getCommandRegistry().registerCommand(new PendingDuelsCommand());
     }
 }

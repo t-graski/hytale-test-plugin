@@ -1,0 +1,71 @@
+//Pages/PendingDuels.ui
+$C = "../Common.ui";
+
+$C.@PageOverlay {}
+
+$C.@Container {
+  Anchor: (Width: 1050, Height: 700);
+
+  #Title {
+    Group {
+      $C.@Title { @Text = "Pending Duels"; }
+      $C.@HeaderSearch {}
+    }
+  }
+
+  #Content {
+    LayoutMode: Left;
+
+    // LEFT: dynamic list populated from Java (like #CommandList)
+    Group #DuelList {
+      Anchor: (Width: 250);
+      LayoutMode: TopScrolling;
+      ScrollbarStyle: $C.@DefaultScrollbarStyle;
+    }
+
+    // RIGHT: details + actions (like #CommandInfo)
+    Group #DuelInfo {
+      FlexWeight: 1;
+      LayoutMode: TopScrolling;
+      Padding: (Left: 10);
+      ScrollbarStyle: $C.@DefaultScrollbarStyle;
+
+      Label #DuelName {
+        Style: (RenderUppercase: true, RenderBold: true, FontSize: 17);
+        Anchor: (Bottom: 5);
+        Text: "Select a duel";
+      }
+
+      Label #DuelMeta {
+        Anchor: (Bottom: 8);
+        Style: (FontSize: 13, TextColor: #7a9cc6);
+        Text: "-";
+      }
+
+      Label #DuelDescription {
+        Anchor: (Bottom: 10);
+        Style: (FontSize: 13, TextColor: #ffffff(0.85));
+        Text: "-";
+      }
+
+      Group {
+        LayoutMode: Left;
+        Anchor: (Bottom: 12);
+
+        $C.@SecondaryTextButton #AcceptButton {
+          Anchor: (Width: 160, Height: 28, Right: 8);
+          Text: "Accept";
+          Visible: false;
+        }
+
+        $C.@TertiaryTextButton #DeclineButton {
+          Anchor: (Width: 160, Height: 28);
+          Text: "Decline";
+          Visible: false;
+        }
+      }
+    }
+  }
+}
+
+$C.@BackButton {}

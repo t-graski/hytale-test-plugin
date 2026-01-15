@@ -4,5 +4,6 @@
   "Version": "1.0.0",
   "Authors": [],
   "Main": "com.tobiasgraski.testplugin.Main",
-  "ServerVersion": "*"
+  "ServerVersion": "*",
+  "IncludesAssetPack": true
 }

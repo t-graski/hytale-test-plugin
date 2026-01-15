@@ -7,16 +7,15 @@ import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.protocol.GameMode;
-import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.entity.entities.Player;
-import com.hypixel.hytale.server.core.event.events.ecs.BreakBlockEvent;
+import com.hypixel.hytale.server.core.event.events.ecs.PlaceBlockEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
-public class BlockBreakSystem extends EntityEventSystem<EntityStore, BreakBlockEvent> {
+public class BlockPlaceSystem extends EntityEventSystem<EntityStore, PlaceBlockEvent> {
 
-    public BlockBreakSystem() {
-        super(BreakBlockEvent.class);
+    public BlockPlaceSystem() {
+        super(PlaceBlockEvent.class);
     }
 
     @Override
@@ -25,8 +24,7 @@ public class BlockBreakSystem extends EntityEventSystem<EntityStore, BreakBlockE
     }
 
     @Override
-    public void handle(int idx, ArchetypeChunk<EntityStore> chunk, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer, BreakBlockEvent event) {
-        if (event.getBlockType() == BlockType.EMPTY) return;
+    public void handle(int idx, ArchetypeChunk<EntityStore> chunk, Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer, PlaceBlockEvent event) {
         Ref<EntityStore> ref = chunk.getReferenceTo(idx);
         Player player = store.getComponent(ref, Player.getComponentType());
 

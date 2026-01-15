@@ -28,6 +28,7 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*.json</include>
+                    <include>**/*.ui</include>
                 </includes>
                 <filtering>false</filtering>
             </resource>

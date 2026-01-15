@@ -10,6 +10,7 @@ import com.tobiasgraski.testplugin.commands.PendingDuelsCommand;
 import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
 import com.tobiasgraski.testplugin.listeners.BlockPlaceSystem;
 import com.tobiasgraski.testplugin.utils.DuelRequests;
+import com.tobiasgraski.testplugin.listeners.DuelDisconnectListener;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +36,8 @@ public class Main extends JavaPlugin {
     protected void start() {
         getEntityStoreRegistry().registerSystem(new BlockBreakSystem());
         getEntityStoreRegistry().registerSystem(new BlockPlaceSystem());
+        getEntityStoreRegistry().registerSystem((ISystem) new DuelDeathSystem());
+        getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, DuelDisconnectListener::onPlayerDisconnect);
     }
 
     @Override

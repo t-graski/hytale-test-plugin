@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class DuelRequests {
 
     private static final ConcurrentHashMap<UUID, PendingDuel> pendingByTarget = new ConcurrentHashMap<>();
+    public static final long EXPIRATION_TIME_MS = 30_000;
 
     public static final class PendingDuel {
         public final UUID senderUuid;

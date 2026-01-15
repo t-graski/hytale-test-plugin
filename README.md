@@ -18,3 +18,9 @@ Example: ```mvn install:install-file ^
 **Starting Hytale Server**
 
 `java -jar HytaleServer.jar --assets ../Assets.zip`
+
+**Opening Port 5520**
+
+Linux: `sudo iptables -A INPUT -p udp --dport 5520 -j ACCEPT`
+
+Windows: `New-NetFirewallRule -DisplayName "Hytale Server" -Direction Inbound -Protocol UDP -LocalPort 5520 -Action Allow`

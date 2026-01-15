@@ -1,5 +1,8 @@
 package com.tobiasgraski.testplugin.utils;
 
+import java.util.concurrent.TimeUnit;
+
+import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.inventory.Inventory;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
@@ -8,6 +11,7 @@ import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 public final class DuelLoadouts {
 
     private DuelLoadouts() {}
+
 
     public static void applyBasicDuelKit(Player player) {
         if (player == null) return;
@@ -32,17 +36,26 @@ public final class DuelLoadouts {
             inv.setUsingToolsItem(false);
             inv.setActiveHotbarSlot((byte) 0);
 
+            // Push equipment state
             player.sendInventory();
-
             player.invalidateEquipmentNetwork();
+
+            // Mark stats dirty
             player.getStatModifiersManager().setRecalculate(true);
 
-            world.execute(() -> {
-                DuelStatsUtil.setHealth(player, 9999);
-                DuelStatsUtil.setStamina(player, 9999);
-            });
+            // Delay ~2-3 ticks (30 TPS => 33ms/tick). Then hop back onto world thread.
+            HytaleServer.SCHEDULED_EXECUTOR.schedule(() -> {
+                world.execute(() -> {
+                    // Force dirty again just before setting, in case the engine cleared the flag.
+                    player.getStatModifiersManager().setRecalculate(true);
+
+                    DuelStatsUtil.setHealth(player, 9999);
+                    DuelStatsUtil.setStamina(player, 9999);
+                });
+            }, 100, TimeUnit.MILLISECONDS); // try 100ms first; bump to 150-200ms if needed
         });
     }
+
 
     
 

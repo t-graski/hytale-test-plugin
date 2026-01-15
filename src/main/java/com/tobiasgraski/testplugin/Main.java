@@ -27,7 +27,11 @@ public class Main extends JavaPlugin {
         registerHandlers();
         registerHello();
 
-        ScheduledFuture<Void> checkExpiredTask = (ScheduledFuture<Void>) HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(DuelRequests::checkExpiredRequests, 0, 3, TimeUnit.SECONDS);
+    ScheduledFuture<Void> checkExpiredTask =
+        (ScheduledFuture<Void>) HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(() -> {
+            DuelRequests.checkExpiredRequests();
+            ActiveDuels.checkExpiredDuels();
+        }, 0, 3, TimeUnit.SECONDS);
         getTaskRegistry().registerTask(checkExpiredTask);
     }
 

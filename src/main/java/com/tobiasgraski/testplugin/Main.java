@@ -2,12 +2,13 @@ package com.tobiasgraski.testplugin;
 
 import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.server.core.HytaleServer;
+import com.hypixel.hytale.server.core.event.events.ecs.DamageBlockEvent;
 import com.hypixel.hytale.server.core.plugin.*;
 import com.tobiasgraski.testplugin.commands.DuelCommand;
 import com.tobiasgraski.testplugin.commands.HelloCommand;
+import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
 import com.tobiasgraski.testplugin.utils.DuelRequests;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +26,12 @@ public class Main extends JavaPlugin {
 
         ScheduledFuture<Void> checkExpiredTask = (ScheduledFuture<Void>) HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(DuelRequests::checkExpiredRequests, 0, 3, TimeUnit.SECONDS);
         getTaskRegistry().registerTask(checkExpiredTask);
+    }
+
+
+    @Override
+    protected void start() {
+        getEntityStoreRegistry().registerSystem(new BlockBreakSystem());
     }
 
     @Override

@@ -59,7 +59,6 @@ public class Main extends JavaPlugin {
     }
 
     private void registerHello() {
-        getCommandRegistry().registerCommand(new HelloCommand());
         getCommandRegistry().registerCommand(new DuelCommand());
         getCommandRegistry().registerCommand(new PendingDuelsCommand());
     }

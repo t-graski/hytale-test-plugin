@@ -11,7 +11,6 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.tobiasgraski.testplugin.commands.DuelCommand;
-import com.tobiasgraski.testplugin.commands.HelloCommand;
 import com.tobiasgraski.testplugin.commands.PendingDuelsCommand;
 import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
 import com.tobiasgraski.testplugin.listeners.BlockPlaceSystem;

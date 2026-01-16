@@ -1,4 +1,4 @@
-package com.tobiasgraski.testplugin.event;
+package com.tobiasgraski.testplugin.listeners;
 
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;

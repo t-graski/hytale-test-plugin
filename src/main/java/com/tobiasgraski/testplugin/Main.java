@@ -1,19 +1,24 @@
 package com.tobiasgraski.testplugin;
 
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 import com.hypixel.hytale.common.plugin.PluginIdentifier;
+import com.hypixel.hytale.component.system.ISystem;
 import com.hypixel.hytale.server.core.HytaleServer;
-import com.hypixel.hytale.server.core.event.events.ecs.DamageBlockEvent;
-import com.hypixel.hytale.server.core.plugin.*;
+import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
+import com.hypixel.hytale.server.core.plugin.JavaPlugin;
+import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.tobiasgraski.testplugin.commands.DuelCommand;
 import com.tobiasgraski.testplugin.commands.HelloCommand;
 import com.tobiasgraski.testplugin.commands.PendingDuelsCommand;
 import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
 import com.tobiasgraski.testplugin.listeners.BlockPlaceSystem;
-import com.tobiasgraski.testplugin.utils.DuelRequests;
+import com.tobiasgraski.testplugin.listeners.DuelDeathSystem;
 import com.tobiasgraski.testplugin.listeners.DuelDisconnectListener;
-
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import com.tobiasgraski.testplugin.utils.ActiveDuels;
+import com.tobiasgraski.testplugin.utils.DuelRequests;
 
 public class Main extends JavaPlugin {
 

@@ -286,48 +286,57 @@ public final class ActiveDuels {
             winner = endedBy.equals(s.a) ? s.b : s.a;
         }
 
-        String baseMsg;
+        var winnerName = winner != null ? (winner.equals(s.a) ? aName : bName) : null;
+        var loserName = loser != null ? (loser.equals(s.a) ? aName : bName) : null;
+
+        var title = "";
+        var subTitle = "";
+        var chatMsg = "";
+
         switch (reason) {
-            case TIMEOUT -> baseMsg = "The duel has ended (time limit reached).";
-            case DEATH -> baseMsg = "The duel has ended (a player died).";
-            case FORFEIT -> baseMsg = "The duel has ended (forfeit).";
-            default -> baseMsg = "The duel has ended.";
+            case DEATH -> {
+                title = "Victory!";
+                subTitle = winnerName + " wins!";
+                chatMsg = winnerName + " deafeated " + loserName + " in combat!";
+            }
+            case FORFEIT -> {
+                title = "Forfeit";
+                subTitle = winnerName + " wins by forfeit";
+                chatMsg = loserName + " forfeited. " + winnerName + " wins!";
+            }
+            case TIMEOUT -> {
+                title = "Time's Up!";
+                subTitle = "The duel ended in a draw";
+                chatMsg = "The duel between " + aName + " and " + bName + " reached the time limit. Result: Draw";
+            }
+            default -> {
+                title = "Duel Ended";
+                subTitle = "The duel has concluded";
+                chatMsg = "The duel has ended.";
+            }
         }
-
-        String winnerMsg = "";
-        if (winner != null && loser != null) {
-            String winnerName = winner.equals(s.a) ? aName : bName;
-            String loserName = loser.equals(s.a) ? aName : bName;
-
-            winnerMsg = " Winner: " + winnerName + ". Loser: " + loserName;
-        } else if (reason == EndReason.TIMEOUT) {
-            winnerMsg = " Result: Draw";
-        }
-
-        String msg = baseMsg + winnerMsg;
 
         if (aRef != null) {
-            aRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
-//            EventTitleUtil.showEventTitleToUniverse(
-//                    Message.raw("The duel has ended!").bold(true).color(Color.RED),
-//                    Message.raw(msg),
-//                    true,
-//                    "ui/icons/announcement.png",
-//                    4.0f, 1.5f, 1.5f);
-           
+            Color titleColor = (winner != null && winner.equals(s.a)) ? Color.GREEN :
+                    (loser != null && loser.equals(s.a)) ? Color.RED : Color.YELLOW;
+
+            aRef.sendMessage(Message.raw(chatMsg).bold(true).color(titleColor));
             EventTitleUtil.showEventTitleToPlayer(
                     aRef,
-                    Message.raw("The duel has ended!").bold(true).color(Color.RED),
-                    Message.raw(msg),
+                    Message.raw(title).bold(true).color(titleColor),
+                    Message.raw(subTitle).color(Color.WHITE),
                     true
             );
         }
         if (bRef != null) {
-            bRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
+            Color titleColor = (winner != null && winner.equals(s.b)) ? Color.GREEN :
+                    (loser != null && loser.equals(s.b)) ? Color.RED : Color.YELLOW;
+
+            bRef.sendMessage(Message.raw(chatMsg).bold(true).color(titleColor));
             EventTitleUtil.showEventTitleToPlayer(
                     bRef,
-                    Message.raw("The duel has ended!").bold(true).color(Color.RED),
-                    Message.raw(msg),
+                    Message.raw(title).bold(true).color(titleColor),
+                    Message.raw(subTitle).color(Color.WHITE),
                     true
             );
         }

@@ -285,9 +285,19 @@ public final class ActiveDuels {
             loser = endedBy;
             winner = endedBy.equals(s.a) ? s.b : s.a;
         }
+        
+        String winnerName = null;
+        String loserName = null;
 
-        var winnerName = winner != null ? (winner.equals(s.a) ? aName : bName) : null;
-        var loserName = loser != null ? (loser.equals(s.a) ? aName : bName) : null;
+        if (winner != null) {
+            PlayerRef winnerRef = Universe.get().getPlayer(winner);
+            winnerName = (winnerRef != null) ? winnerRef.getUsername() : "Winner";
+        }
+
+        if (loser != null) {
+            PlayerRef loserRef = Universe.get().getPlayer(loser);
+            loserName = (loserRef != null) ? loserRef.getUsername() : "Loser";
+        }
 
         var title = "";
         var subTitle = "";

@@ -11,7 +11,8 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 public final class DuelStatsUtil {
-    private DuelStatsUtil() {}
+    private DuelStatsUtil() {
+    }
 
     public static boolean healToFull(Player player) {
         return setStatToMax(player, "Health");
@@ -26,12 +27,16 @@ public final class DuelStatsUtil {
         setStatToMax(player, "Stamina");
     }
 
-    /** Sets current Health to an integer value (clamped to [min,max]). */
+    /**
+     * Sets current Health to an integer value (clamped to [min,max]).
+     */
     public static boolean setHealth(Player player, int hp) {
         return setStat(player, "Health", (float) hp, true);
     }
 
-    /** Sets current Stamina to an integer value (clamped to [min,max]). */
+    /**
+     * Sets current Stamina to an integer value (clamped to [min,max]).
+     */
     public static boolean setStamina(Player player, int stamina) {
         return setStat(player, "Stamina", (float) stamina, true);
     }
@@ -39,7 +44,7 @@ public final class DuelStatsUtil {
     /**
      * Sets a named stat to its max value.
      * Returns true if it successfully queued the update, false otherwise.
-     *
+     * <p>
      * No CommandContext required (no chat output).
      */
     public static boolean setStatToMax(Player player, String statName) {
@@ -114,5 +119,29 @@ public final class DuelStatsUtil {
         });
 
         return true;
+    }
+
+    public static float getCurrentHealth(Player player) {
+        if (player == null) return -1;
+
+        Ref<EntityStore> ref = player.getReference();
+        if (ref == null || !ref.isValid()) return -1;
+
+        Store<EntityStore> store = ref.getStore();
+        final int healthStatIdx = EntityStatType.getAssetMap().getIndex("Health");
+        if (healthStatIdx == Integer.MIN_VALUE) return -1;
+
+        EntityStatMap statMap = (EntityStatMap) store.getComponent(
+                ref,
+                EntityStatsModule.get().getEntityStatMapComponentType()
+        );
+
+        if (statMap == null) return -1;
+
+        EntityStatValue healthStat = statMap.get(healthStatIdx);
+
+        if (healthStat == null) return -1;
+
+        return healthStat.get();
     }
 }

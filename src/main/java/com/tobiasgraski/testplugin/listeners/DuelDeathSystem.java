@@ -13,7 +13,6 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DeathComponent;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;
 
-import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +21,6 @@ public final class DuelDeathSystem extends EntityTickingSystem<EntityStore> {
     // “run once per death” guard
     private final ConcurrentHashMap<UUID, Long> handled = new ConcurrentHashMap<>();
 
-    @Nullable
     @Override
     public Query<EntityStore> getQuery() {
         return Query.and(
@@ -48,9 +46,8 @@ public final class DuelDeathSystem extends EntityTickingSystem<EntityStore> {
         Long prev = handled.putIfAbsent(playerId, now);
         if (prev != null && (now - prev) < 5_000) return;
 
-        
         ActiveDuels.end(playerId, ActiveDuels.EndReason.DEATH);
-        
+
         handled.put(playerId, now);
     }
 }

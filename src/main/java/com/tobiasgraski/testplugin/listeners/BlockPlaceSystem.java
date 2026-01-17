@@ -16,6 +16,7 @@ public class BlockPlaceSystem extends EntityEventSystem<EntityStore, PlaceBlockE
 
     public BlockPlaceSystem() {
         super(PlaceBlockEvent.class);
+
     }
 
     @Override

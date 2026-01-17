@@ -13,22 +13,19 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DamageModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;
+import com.tobiasgraski.testplugin.utils.DuelStatsUtil;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.UUID;
 
 public class DuelOnlyPvPSystem extends DamageEventSystem {
 
     @Override
-    @Nullable
     public SystemGroup getGroup() {
         // same group as PreventDamageSystem: cancels damage early
         return DamageModule.get().getFilterDamageGroup();
     }
 
     @Override
-    @Nonnull
     public Query getQuery() {
         return PlayerRef.getComponentType();
     }
@@ -36,20 +33,18 @@ public class DuelOnlyPvPSystem extends DamageEventSystem {
     @Override
     public void handle(
             int index,
-            @Nonnull ArchetypeChunk archetypeChunk,
-            @Nonnull Store store,
-            @Nonnull CommandBuffer commandBuffer,
-            @Nonnull Damage damage
+            ArchetypeChunk archetypeChunk,
+            Store store,
+            CommandBuffer commandBuffer,
+            Damage damage
     ) {
         if (damage.isCancelled()) return;
 
         Damage.Source source = damage.getSource();
-        if (!(source instanceof Damage.EntitySource)) return;
-
-        Damage.EntitySource entitySource = (Damage.EntitySource) source;
+        if (!(source instanceof Damage.EntitySource entitySource)) return;
 
         Ref<EntityStore> attackerRef = (Ref<EntityStore>) entitySource.getRef();
-        if (attackerRef == null || !attackerRef.isValid()) return;
+        if (!attackerRef.isValid()) return;
 
         // Attacker must be a player
         Player attacker = (Player) commandBuffer.getComponent(attackerRef, Player.getComponentType());
@@ -63,6 +58,14 @@ public class DuelOnlyPvPSystem extends DamageEventSystem {
         UUID attackerId = attacker.getUuid();
         UUID victimId = victim.getUuid();
         if (attackerId == null || victimId == null) return;
+
+        var victimHealth = DuelStatsUtil.getCurrentHealth(victim);
+        // Check if player would die and cancel event & end duel
+        if (victimHealth > 0 && victimHealth - damage.getAmount() <= 0) {
+            damage.setCancelled(true);
+            ActiveDuels.end(attackerId, ActiveDuels.EndReason.DEATH);
+            return;
+        }
 
         // Only allow damage if they are opponents in an active duel
         if (!ActiveDuels.areOpponents(attackerId, victimId)) {

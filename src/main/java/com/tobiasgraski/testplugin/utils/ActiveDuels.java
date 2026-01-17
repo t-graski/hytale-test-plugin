@@ -260,11 +260,11 @@ public final class ActiveDuels {
         Vector3f rot = new Vector3f(pitch, yawRad, roll);
 
         if (aRef != null) {
-            TeleportUtil.teleport(aRef, 108, 101, 91, rot);
+            TeleportUtil.teleport(aRef, 651, 112, 252, rot);
             DuelLoadouts.clearInventory(resolveOnlinePlayer(aRef));
         }
         if (bRef != null) {
-            TeleportUtil.teleport(bRef, 108, 101, 91, rot);
+            TeleportUtil.teleport(bRef, 651, 112, 252, rot);
             DuelLoadouts.clearInventory(resolveOnlinePlayer(bRef));
         }
     }

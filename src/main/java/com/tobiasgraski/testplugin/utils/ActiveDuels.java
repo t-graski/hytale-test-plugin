@@ -9,6 +9,7 @@ import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import com.hypixel.hytale.server.core.util.EventTitleUtil;
 
 import java.awt.*;
 import java.util.UUID;
@@ -23,7 +24,7 @@ public final class ActiveDuels {
 
     // key: arenaId -> session (occupied)
     private static final ConcurrentHashMap<Integer, DuelSession> arenaOccupancy = new ConcurrentHashMap<>();
-    
+
     private static float yawToFace(double fromX, double fromZ, double toX, double toZ) {
         double dx = toX - fromX;
         double dz = toZ - fromZ;
@@ -31,14 +32,14 @@ public final class ActiveDuels {
         return (float) Math.atan2(-dx, -dz); // radians
     }
 
-    private static final Arena[] ARENAS = new Arena[] {
-        new Arena(0, new Vector3f(14, 99, 0),     new Vector3f(-14, 100, 0)),
-        new Arena(1, new Vector3f(-10, 100, -81), new Vector3f(18, 101, -81)),
-        new Arena(2, new Vector3f(163, 97, -30),  new Vector3f(135, 98, -30)),
-        new Arena(3, new Vector3f(122, 99, 91),   new Vector3f(94, 100, 91)),
+    private static final Arena[] ARENAS = new Arena[]{
+            new Arena(0, new Vector3f(14, 99, 0), new Vector3f(-14, 100, 0)),
+            new Arena(1, new Vector3f(-10, 100, -81), new Vector3f(18, 101, -81)),
+            new Arena(2, new Vector3f(163, 97, -30), new Vector3f(135, 98, -30)),
+            new Arena(3, new Vector3f(122, 99, 91), new Vector3f(94, 100, 91)),
     };
 
-    public enum EndReason { DEATH, TIMEOUT, FORFEIT }
+    public enum EndReason {DEATH, TIMEOUT, FORFEIT}
 
     public static final class DuelSession {
         public final UUID a;
@@ -66,12 +67,13 @@ public final class ActiveDuels {
         }
     }
 
-    private ActiveDuels() {}
+    private ActiveDuels() {
+    }
 
     public static boolean isInDuel(UUID player) {
         return byPlayer.containsKey(player);
     }
-    
+
     public static boolean areOpponents(UUID attacker, UUID victim) {
         DuelSession s = byPlayer.get(attacker);
         return s != null && s.involves(victim);
@@ -82,7 +84,9 @@ public final class ActiveDuels {
         return byPlayer.get(player);
     }
 
-    /** Returns null if no arenas are free. */
+    /**
+     * Returns null if no arenas are free.
+     */
     private static Arena tryClaimFreeArena(DuelSession s) {
         for (Arena a : ARENAS) {
             if (arenaOccupancy.putIfAbsent(a.getId(), s) == null) {
@@ -115,10 +119,10 @@ public final class ActiveDuels {
 
         // Don’t allow starting if either is already in a duel
         if (isInDuel(a) || isInDuel(b)) {
-        	return false;
+            return false;
         }
 
-        
+
         // Claim an arena atomically
         DuelSession placeholder = new DuelSession(a, b, -1);
         Arena arena = tryClaimFreeArena(placeholder);
@@ -171,7 +175,9 @@ public final class ActiveDuels {
         return session;
     }
 
-    /** Periodic cleanup for time limit. Call from a tick system or scheduler. */
+    /**
+     * Periodic cleanup for time limit. Call from a tick system or scheduler.
+     */
     public static void checkExpiredDuels() {
         byPlayer.forEach((player, session) -> {
             if (session.isExpired()) {
@@ -283,15 +289,15 @@ public final class ActiveDuels {
         String baseMsg;
         switch (reason) {
             case TIMEOUT -> baseMsg = "The duel has ended (time limit reached).";
-            case DEATH   -> baseMsg = "The duel has ended (a player died).";
+            case DEATH -> baseMsg = "The duel has ended (a player died).";
             case FORFEIT -> baseMsg = "The duel has ended (forfeit).";
-            default      -> baseMsg = "The duel has ended.";
+            default -> baseMsg = "The duel has ended.";
         }
 
         String winnerMsg = "";
         if (winner != null && loser != null) {
             String winnerName = winner.equals(s.a) ? aName : bName;
-            String loserName  = loser.equals(s.a)  ? aName : bName;
+            String loserName = loser.equals(s.a) ? aName : bName;
 
             winnerMsg = " Winner: " + winnerName + ". Loser: " + loserName;
         } else if (reason == EndReason.TIMEOUT) {
@@ -300,7 +306,23 @@ public final class ActiveDuels {
 
         String msg = baseMsg + winnerMsg;
 
-        if (aRef != null) aRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
-        if (bRef != null) bRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
+        if (aRef != null) {
+            aRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
+            EventTitleUtil.showEventTitleToPlayer(
+                    aRef,
+                    Message.raw("The duel has ended!").bold(true).color(Color.RED),
+                    Message.raw(msg),
+                    true
+            );
+        }
+        if (bRef != null) {
+            bRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
+            EventTitleUtil.showEventTitleToPlayer(
+                    aRef,
+                    Message.raw("The duel has ended!").bold(true).color(Color.RED),
+                    Message.raw(msg),
+                    true
+            );
+        }
     }
 }

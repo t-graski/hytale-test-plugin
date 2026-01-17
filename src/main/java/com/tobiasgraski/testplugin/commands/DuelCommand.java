@@ -12,6 +12,7 @@ import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;
+import com.tobiasgraski.testplugin.utils.CustomNotificationUtil;
 import com.tobiasgraski.testplugin.utils.DuelLoadouts;
 import com.tobiasgraski.testplugin.utils.DuelRequests;
 
@@ -44,7 +45,7 @@ public class DuelCommand extends CommandBase {
         String action = ctx.get(actionArg).toLowerCase();
 
         switch (action) {
-        case "request" -> handleRequest(executorRef, otherRef, Optional.ofNullable(ctx.get(kitArg)));
+            case "request" -> handleRequest(executorRef, otherRef, Optional.ofNullable(ctx.get(kitArg)));
             case "accept" -> handleAccept(ctx, executorRef, otherRef);
             default -> executor.sendMessage(
                     Message.raw("Usage: ").color(Color.RED)
@@ -59,9 +60,9 @@ public class DuelCommand extends CommandBase {
         if (ref == null || ref.getWorldUuid() == null) return null;
         return (Player) Universe.get().getWorld(ref.getWorldUuid()).getEntity(ref.getUuid());
     }
-    
-    private static final String[] VALID_KITS = { "default", "barbarian", "archer" };
-    
+
+    private static final String[] VALID_KITS = {"default", "barbarian", "archer"};
+
     private static boolean isValidKit(String kitName) {
         if (kitName == null) return false;
         String k = kitName.trim().toLowerCase();
@@ -74,7 +75,7 @@ public class DuelCommand extends CommandBase {
     private static String validKitsString() {
         return String.join(", ", VALID_KITS);
     }
-    
+
     private static String normalizeKit(Optional<String> kitOpt) {
         if (kitOpt == null || kitOpt.isEmpty()) return "Default";
         String k = kitOpt.get();
@@ -82,7 +83,7 @@ public class DuelCommand extends CommandBase {
         k = k.trim();
         return k.isEmpty() ? "Default" : k;
     }
-    
+
     private static String normalizeKit(String kit) {
         if (kit == null) return "Default";
         kit = kit.trim();
@@ -111,7 +112,7 @@ public class DuelCommand extends CommandBase {
         }
 
         String kitName = normalizeKit(kit);
-        
+
         if (!isValidKit(kitName)) {
             sender.sendMessage(
                     Message.raw("Unknown kit: ").color(Color.RED)
@@ -124,39 +125,57 @@ public class DuelCommand extends CommandBase {
 
         DuelRequests.put(target.getUuid(), sender.getUuid(), sender.getUsername(), Optional.of(kitName));
 
+        CustomNotificationUtil.sendNotification(
+                sender,
+                "Duel Request",
+                Color.GREEN,
+                "Sent request to " + target.getUsername() + "!",
+                Color.GRAY,
+                "Weapon_Sword_Mithril"
+        );
+
+        CustomNotificationUtil.sendNotification(
+                target,
+                "Duel Request",
+                Color.RED,
+                "Received request from " + sender.getUsername() + "!",
+                Color.GRAY,
+                "Weapon_Sword_Mithril"
+        );
+
         // Sender sees kit
-        sender.sendMessage(
-                Message.empty()
-                        .insert(Message.raw("You sent a duel request to ").color(Color.RED))
-                        .insert(Message.raw(target.getUsername()).bold(true).color(Color.GREEN))
-                        .insert(Message.raw(" ").color(Color.RED))
-                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
-                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
-                        .insert(Message.raw("]").color(Color.GRAY))
-        );
-
-
-        // Target sees kit
-        target.sendMessage(
-                Message.empty()
-                        .insert(Message.raw(sender.getUsername()).bold(true).color(Color.GREEN))
-                        .insert(Message.raw(" sent you a duel request ").color(Color.RED))
-                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
-                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
-                        .insert(Message.raw("]").color(Color.GRAY))
-                        .insert(Message.raw(". ").color(Color.RED))
-                        .insert(Message.raw("Type ").color(Color.GRAY))
-                        .insert(Message.raw("/duel accept " + sender.getUsername()).bold(true).color(Color.YELLOW))
-                        .insert(Message.raw(" to accept. ").color(Color.RED))
-                        .insert(Message.raw("This request expires in " + DuelRequests.EXPIRATION_TIME_MS / 1000 + " seconds").color(Color.GREEN))
-        );
+//        sender.sendMessage(
+//                Message.empty()
+//                        .insert(Message.raw("You sent a duel request to ").color(Color.RED))
+//                        .insert(Message.raw(target.getUsername()).bold(true).color(Color.GREEN))
+//                        .insert(Message.raw(" ").color(Color.RED))
+//                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
+//                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
+//                        .insert(Message.raw("]").color(Color.GRAY))
+//        );
+//
+//
+//        // Target sees kit
+//        target.sendMessage(
+//                Message.empty()
+//                        .insert(Message.raw(sender.getUsername()).bold(true).color(Color.GREEN))
+//                        .insert(Message.raw(" sent you a duel request ").color(Color.RED))
+//                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
+//                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
+//                        .insert(Message.raw("]").color(Color.GRAY))
+//                        .insert(Message.raw(". ").color(Color.RED))
+//                        .insert(Message.raw("Type ").color(Color.GRAY))
+//                        .insert(Message.raw("/duel accept " + sender.getUsername()).bold(true).color(Color.YELLOW))
+//                        .insert(Message.raw(" to accept. ").color(Color.RED))
+//                        .insert(Message.raw("This request expires in " + DuelRequests.EXPIRATION_TIME_MS / 1000 + " seconds").color(Color.GREEN))
+//        );
     }
 
 
     private void handleAccept(CommandContext ctx, PlayerRef target, PlayerRef sender) {
         DuelRequests.PendingDuel pending = DuelRequests.consume(target.getUuid());
         String kitName = normalizeKit(pending.kit);
-        
+
         if (pending == null) {
             target.sendMessage(Message.raw("You have no pending duel requests.").color(Color.RED));
             return;
@@ -200,34 +219,34 @@ public class DuelCommand extends CommandBase {
 
         ActiveDuels.start(target.getUuid(), sender.getUuid());
 
-        
+
         switch (kitName.trim().toLowerCase()) {
-        case "default" -> {
-            DuelLoadouts.applyBasicDuelKit(senderPlayer);
-            DuelLoadouts.applyBasicDuelKit(targetPlayer);
-        }
+            case "default" -> {
+                DuelLoadouts.applyBasicDuelKit(senderPlayer);
+                DuelLoadouts.applyBasicDuelKit(targetPlayer);
+            }
 
-        case "barbarian" -> {
-            DuelLoadouts.applyBarbarianDuelKit(senderPlayer);
-            DuelLoadouts.applyBarbarianDuelKit(targetPlayer);
-        }
-        
-        case "archer" -> {
-            DuelLoadouts.applyArcherDuelKit(senderPlayer);
-            DuelLoadouts.applyArcherDuelKit(targetPlayer);
-        }
+            case "barbarian" -> {
+                DuelLoadouts.applyBarbarianDuelKit(senderPlayer);
+                DuelLoadouts.applyBarbarianDuelKit(targetPlayer);
+            }
 
-        default -> {
-            // fallback if someone typed an unknown kit
-            DuelLoadouts.applyBasicDuelKit(senderPlayer);
-            DuelLoadouts.applyBasicDuelKit(targetPlayer);
+            case "archer" -> {
+                DuelLoadouts.applyArcherDuelKit(senderPlayer);
+                DuelLoadouts.applyArcherDuelKit(targetPlayer);
+            }
 
-            targetPlayer.sendMessage(
-                    Message.raw("Unknown kit '" + kitName + "'. Using Default kit.")
-                            .color(Color.RED)
-            );
+            default -> {
+                // fallback if someone typed an unknown kit
+                DuelLoadouts.applyBasicDuelKit(senderPlayer);
+                DuelLoadouts.applyBasicDuelKit(targetPlayer);
+
+                targetPlayer.sendMessage(
+                        Message.raw("Unknown kit '" + kitName + "'. Using Default kit.")
+                                .color(Color.RED)
+                );
+            }
         }
-    }
 
 
         // keep pitch 0 so they look level; roll unused

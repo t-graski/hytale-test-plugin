@@ -1,4 +1,4 @@
-﻿package com.tobiasgraski.testplugin.commands;
+package com.tobiasgraski.testplugin.commands;
 
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.Holder;

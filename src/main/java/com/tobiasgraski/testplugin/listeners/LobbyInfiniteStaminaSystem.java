@@ -13,12 +13,10 @@ import com.hypixel.hytale.server.core.modules.entitystats.asset.DefaultEntitySta
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;
 
-import javax.annotation.Nonnull;
 import java.util.UUID;
 
 public class LobbyInfiniteStaminaSystem extends EntityTickingSystem<EntityStore> {
 
-    @Nonnull
     private final Query<EntityStore> query;
 
     public LobbyInfiniteStaminaSystem() {
@@ -32,9 +30,9 @@ public class LobbyInfiniteStaminaSystem extends EntityTickingSystem<EntityStore>
     public void tick(
             float dt,
             int index,
-            @Nonnull ArchetypeChunk<EntityStore> archetypeChunk,
-            @Nonnull Store<EntityStore> store,
-            @Nonnull CommandBuffer<EntityStore> commandBuffer
+            ArchetypeChunk<EntityStore> archetypeChunk,
+            Store<EntityStore> store,
+            CommandBuffer<EntityStore> commandBuffer
     ) {
         Player player = (Player) archetypeChunk.getComponent(index, Player.getComponentType());
         if (player == null) return;
@@ -61,7 +59,6 @@ public class LobbyInfiniteStaminaSystem extends EntityTickingSystem<EntityStore>
     }
 
     @Override
-    @Nonnull
     public Query<EntityStore> getQuery() {
         return query;
     }

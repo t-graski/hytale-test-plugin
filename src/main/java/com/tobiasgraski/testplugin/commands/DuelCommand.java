@@ -4,6 +4,7 @@ import com.hypixel.hytale.protocol.GameMode;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.NameMatching;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
+import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
@@ -13,22 +14,23 @@ import com.hypixel.hytale.server.core.universe.Universe;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;   // <-- ADD
 import com.tobiasgraski.testplugin.utils.DuelLoadouts;
 import com.tobiasgraski.testplugin.utils.DuelRequests;
-import com.tobiasgraski.testplugin.utils.DuelStatsUtil;
-import com.tobiasgraski.testplugin.utils.TeleportUtil;
 
 import java.awt.*;
+import java.util.Optional;
 
 public class DuelCommand extends CommandBase {
 
     private final RequiredArg<String> actionArg;
     private final RequiredArg<PlayerRef> playerArg;
+    private final OptionalArg<String> kitArg;
 
     public DuelCommand() {
-        super("Duel", "Duel commands: /duel request <target>, /duel accept <sender>");
+        super("Duel", "Duel commands: /duel request <target> [kit], /duel accept <sender>");
         this.setPermissionGroup(GameMode.Adventure);
 
         actionArg = withRequiredArg("action", "request | accept", ArgTypes.STRING);
         playerArg = withRequiredArg("player", "target (request) or sender (accept)", ArgTypes.PLAYER_REF);
+        kitArg = withOptionalArg("kit", "The kit to be played with", ArgTypes.STRING);
     }
 
     @Override
@@ -42,7 +44,7 @@ public class DuelCommand extends CommandBase {
         String action = ctx.get(actionArg).toLowerCase();
 
         switch (action) {
-            case "request" -> handleRequest(executorRef, otherRef);
+            case "request" -> handleRequest(executorRef, otherRef, Optional.of(ctx.get(kitArg)));
             case "accept" -> handleAccept(ctx, executorRef, otherRef);
             default -> executor.sendMessage(
                     Message.raw("Usage: ").color(Color.RED)
@@ -57,7 +59,7 @@ public class DuelCommand extends CommandBase {
         if (ref == null || ref.getWorldUuid() == null) return null;
         return (Player) Universe.get().getWorld(ref.getWorldUuid()).getEntity(ref.getUuid());
     }
-    
+
     private static float yawToFace(double fromX, double fromZ, double toX, double toZ) {
         double dx = toX - fromX;
         double dz = toZ - fromZ;
@@ -65,12 +67,12 @@ public class DuelCommand extends CommandBase {
         return (float) Math.atan2(-dx, -dz); // radians
     }
 
-    private void handleRequest(PlayerRef sender, PlayerRef target) {
+    private void handleRequest(PlayerRef sender, PlayerRef target, Optional<String> kit) {
         if (target == null) {
             sender.sendMessage(Message.raw("That player isn't available right now").color(Color.RED));
             return;
         }
-        
+
         if (target.getUuid().equals(sender.getUuid())) {
             sender.sendMessage(Message.raw("You cannot duel yourself").bold(true).color(Color.RED));
             return;
@@ -87,7 +89,7 @@ public class DuelCommand extends CommandBase {
             return;
         }
 
-        DuelRequests.put(target.getUuid(), sender.getUuid(), sender.getUsername());
+        DuelRequests.put(target.getUuid(), sender.getUuid(), sender.getUsername(), kit);
 
         sender.sendMessage(
                 Message.raw("You sent a duel request to ").color(Color.RED)
@@ -116,7 +118,7 @@ public class DuelCommand extends CommandBase {
                         pending.senderName.equalsIgnoreCase(sender.getUsername());
 
         if (!matches) {
-            DuelRequests.put(target.getUuid(), pending.senderUuid, pending.senderName);
+            DuelRequests.put(target.getUuid(), pending.senderUuid, pending.senderName, pending.kit.describeConstable());
 
             target.sendMessage(
                     Message.raw("Your pending duel request is from ").color(Color.RED)
@@ -146,7 +148,7 @@ public class DuelCommand extends CommandBase {
             }
             return;
         }
-        
+
         ActiveDuels.start(target.getUuid(), sender.getUuid());
 
         DuelLoadouts.applyBasicDuelKit(senderPlayer);

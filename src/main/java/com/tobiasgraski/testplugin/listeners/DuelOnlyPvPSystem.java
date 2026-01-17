@@ -13,6 +13,7 @@ import com.hypixel.hytale.server.core.modules.entity.damage.DamageModule;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;
+import com.tobiasgraski.testplugin.utils.DuelStatsUtil;
 
 import java.util.UUID;
 
@@ -57,10 +58,8 @@ public class DuelOnlyPvPSystem extends DamageEventSystem {
         if (source instanceof Damage.EntitySource entitySource) {
             Ref<EntityStore> attackerRef = (Ref<EntityStore>) entitySource.getRef();
             if (attackerRef == null || !attackerRef.isValid()) return;
-        if (!(source instanceof Damage.EntitySource entitySource)) return;
 
-        Ref<EntityStore> attackerRef = (Ref<EntityStore>) entitySource.getRef();
-        if (!attackerRef.isValid()) return;
+            if (!attackerRef.isValid()) return;
 
             Player attacker = (Player) commandBuffer.getComponent(attackerRef, Player.getComponentType());
             if (attacker == null) return; // not player attacker => allow (mob, projectile entity, etc.)
@@ -68,17 +67,18 @@ public class DuelOnlyPvPSystem extends DamageEventSystem {
             UUID attackerId = attacker.getUuid();
             if (attackerId == null) return;
 
-        var victimHealth = DuelStatsUtil.getCurrentHealth(victim);
-        // Check if player would die and cancel event & end duel
-        if (victimHealth > 0 && victimHealth - damage.getAmount() <= 0) {
-            damage.setCancelled(true);
-            ActiveDuels.end(attackerId, ActiveDuels.EndReason.DEATH);
-            return;
-        }
+            var victimHealth = DuelStatsUtil.getCurrentHealth(victim);
+            // Check if player would die and cancel event & end duel
+            if (victimHealth > 0 && victimHealth - damage.getAmount() <= 0) {
+                damage.setCancelled(true);
+                ActiveDuels.end(attackerId, ActiveDuels.EndReason.DEATH);
+                return;
+            }
 
-        // Only allow damage if they are opponents in an active duel
-        if (!ActiveDuels.areOpponents(attackerId, victimId)) {
-            damage.setCancelled(true);
+            // Only allow damage if they are opponents in an active duel
+            if (!ActiveDuels.areOpponents(attackerId, victimId)) {
+                damage.setCancelled(true);
+            }
         }
     }
 }

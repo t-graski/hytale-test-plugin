@@ -4,6 +4,7 @@ import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.universe.Universe;
 
 import java.awt.*;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,13 +21,14 @@ public final class DuelRequests {
         public final String senderName;
         public final UUID targetUuid;
         public final long timestamp;
+        public final String kit;
 
-        public PendingDuel(UUID senderUuid, String senderName, UUID targetUuid) {
+        public PendingDuel(UUID senderUuid, String senderName, UUID targetUuid, Optional<String> kit) {
             this.senderUuid = senderUuid;
             this.senderName = senderName;
             this.targetUuid = targetUuid;
             this.timestamp = System.currentTimeMillis();
-
+            this.kit = kit.orElse("default");
         }
 
         public boolean isExpired() {
@@ -40,8 +42,8 @@ public final class DuelRequests {
     /**
      * Create/replace the pending request for this target.
      */
-    public static void put(UUID targetUuid, UUID senderUuid, String senderName) {
-        pendingByTarget.put(targetUuid, new PendingDuel(senderUuid, senderName, targetUuid));
+    public static void put(UUID targetUuid, UUID senderUuid, String senderName, Optional<String> kit) {
+        pendingByTarget.put(targetUuid, new PendingDuel(senderUuid, senderName, targetUuid, kit));
     }
 
     /**

@@ -144,31 +144,31 @@ public class DuelCommand extends CommandBase {
         );
 
         // Sender sees kit
-//        sender.sendMessage(
-//                Message.empty()
-//                        .insert(Message.raw("You sent a duel request to ").color(Color.RED))
-//                        .insert(Message.raw(target.getUsername()).bold(true).color(Color.GREEN))
-//                        .insert(Message.raw(" ").color(Color.RED))
-//                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
-//                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
-//                        .insert(Message.raw("]").color(Color.GRAY))
-//        );
-//
-//
-//        // Target sees kit
-//        target.sendMessage(
-//                Message.empty()
-//                        .insert(Message.raw(sender.getUsername()).bold(true).color(Color.GREEN))
-//                        .insert(Message.raw(" sent you a duel request ").color(Color.RED))
-//                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
-//                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
-//                        .insert(Message.raw("]").color(Color.GRAY))
-//                        .insert(Message.raw(". ").color(Color.RED))
-//                        .insert(Message.raw("Type ").color(Color.GRAY))
-//                        .insert(Message.raw("/duel accept " + sender.getUsername()).bold(true).color(Color.YELLOW))
-//                        .insert(Message.raw(" to accept. ").color(Color.RED))
-//                        .insert(Message.raw("This request expires in " + DuelRequests.EXPIRATION_TIME_MS / 1000 + " seconds").color(Color.GREEN))
-//        );
+        sender.sendMessage(
+                Message.empty()
+                        .insert(Message.raw("You sent a duel request to ").color(Color.RED))
+                        .insert(Message.raw(target.getUsername()).bold(true).color(Color.GREEN))
+                        .insert(Message.raw(" ").color(Color.RED))
+                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
+                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
+                        .insert(Message.raw("]").color(Color.GRAY))
+        );
+
+
+        // Target sees kit
+        target.sendMessage(
+                Message.empty()
+                        .insert(Message.raw(sender.getUsername()).bold(true).color(Color.GREEN))
+                        .insert(Message.raw(" sent you a duel request ").color(Color.RED))
+                        .insert(Message.raw("[Kit: ").color(Color.GRAY))
+                        .insert(Message.raw(kitName).bold(true).color(Color.YELLOW))
+                        .insert(Message.raw("]").color(Color.GRAY))
+                        .insert(Message.raw(". ").color(Color.RED))
+                        .insert(Message.raw("Type ").color(Color.GRAY))
+                        .insert(Message.raw("/duel accept " + sender.getUsername()).bold(true).color(Color.YELLOW))
+                        .insert(Message.raw(" to accept. ").color(Color.RED))
+                        .insert(Message.raw("This request expires in " + DuelRequests.EXPIRATION_TIME_MS / 1000 + " seconds").color(Color.GREEN))
+        );
     }
 
 

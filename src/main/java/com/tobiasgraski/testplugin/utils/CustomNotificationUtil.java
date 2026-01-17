@@ -1,4 +1,4 @@
-﻿package com.tobiasgraski.testplugin.utils;
+package com.tobiasgraski.testplugin.utils;
 
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.inventory.ItemStack;

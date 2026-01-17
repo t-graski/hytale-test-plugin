@@ -3,10 +3,15 @@ package com.tobiasgraski.testplugin.utils;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.modules.entity.EntityModule;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.EventTitleUtil;
@@ -285,7 +290,7 @@ public final class ActiveDuels {
             loser = endedBy;
             winner = endedBy.equals(s.a) ? s.b : s.a;
         }
-        
+
         String winnerName = null;
         String loserName = null;
 
@@ -337,6 +342,15 @@ public final class ActiveDuels {
                     Message.raw(subTitle).color(Color.WHITE),
                     true
             );
+
+            var idx = SoundEvent.getAssetMap().getIndex("Portal_Open_01");
+            var world = Universe.get().getWorld(aRef.getWorldUuid());
+            var store = world.getEntityStore();
+
+            world.execute(() -> {
+                TransformComponent transform = store.getStore().getComponent(aRef.getReference(), EntityModule.get().getTransformComponentType());
+                SoundUtil.playSoundEvent3dToPlayer(aRef.getReference(), idx, SoundCategory.SFX, transform.getPosition(), store.getStore());
+            });
         }
         if (bRef != null) {
             Color titleColor = (winner != null && winner.equals(s.b)) ? Color.GREEN :
@@ -349,6 +363,15 @@ public final class ActiveDuels {
                     Message.raw(subTitle).color(Color.WHITE),
                     true
             );
+
+            var idx = SoundEvent.getAssetMap().getIndex("Portal_Open_01");
+            var world = Universe.get().getWorld(bRef.getWorldUuid());
+            var store = world.getEntityStore();
+
+            world.execute(() -> {
+                TransformComponent transform = store.getStore().getComponent(bRef.getReference(), EntityModule.get().getTransformComponentType());
+                SoundUtil.playSoundEvent3dToPlayer(bRef.getReference(), idx, SoundCategory.SFX, transform.getPosition(), store.getStore());
+            });
         }
     }
 }

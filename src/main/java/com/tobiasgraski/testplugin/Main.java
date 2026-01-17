@@ -12,6 +12,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.tobiasgraski.testplugin.commands.DuelCommand;
 import com.tobiasgraski.testplugin.commands.PendingDuelsCommand;
+import com.tobiasgraski.testplugin.commands.TitleHologramCommand;
 import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
 import com.tobiasgraski.testplugin.listeners.BlockPlaceSystem;
 import com.tobiasgraski.testplugin.listeners.DuelDeathSystem;
@@ -34,11 +35,11 @@ public class Main extends JavaPlugin {
         registerHandlers();
         registerHello();
 
-    ScheduledFuture<Void> checkExpiredTask =
-        (ScheduledFuture<Void>) HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(() -> {
-            DuelRequests.checkExpiredRequests();
-            ActiveDuels.checkExpiredDuels();
-        }, 0, 3, TimeUnit.SECONDS);
+        ScheduledFuture<Void> checkExpiredTask =
+                (ScheduledFuture<Void>) HytaleServer.SCHEDULED_EXECUTOR.scheduleAtFixedRate(() -> {
+                    DuelRequests.checkExpiredRequests();
+                    ActiveDuels.checkExpiredDuels();
+                }, 0, 3, TimeUnit.SECONDS);
         getTaskRegistry().registerTask(checkExpiredTask);
     }
 
@@ -49,7 +50,7 @@ public class Main extends JavaPlugin {
         getEntityStoreRegistry().registerSystem(new BlockPlaceSystem());
         getEntityStoreRegistry().registerSystem((ISystem) new DuelDeathSystem());
         getEntityStoreRegistry().registerSystem((ISystem) new DuelOnlyPvPSystem());
-        getEntityStoreRegistry().registerSystem((ISystem)new LobbyInfiniteStaminaSystem());
+        getEntityStoreRegistry().registerSystem((ISystem) new LobbyInfiniteStaminaSystem());
         getEntityStoreRegistry().registerSystem(new DuelNoDropSystem());
         getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, DuelDisconnectListener::onPlayerDisconnect);
     }
@@ -66,5 +67,6 @@ public class Main extends JavaPlugin {
     private void registerHello() {
         getCommandRegistry().registerCommand(new DuelCommand());
         getCommandRegistry().registerCommand(new PendingDuelsCommand());
+        getCommandRegistry().registerCommand(new TitleHologramCommand());
     }
 }

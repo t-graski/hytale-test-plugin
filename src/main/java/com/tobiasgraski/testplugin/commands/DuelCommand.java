@@ -1,16 +1,21 @@
 package com.tobiasgraski.testplugin.commands;
 
 import com.hypixel.hytale.protocol.GameMode;
+import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.NameMatching;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.arguments.system.OptionalArg;
 import com.hypixel.hytale.server.core.command.system.arguments.system.RequiredArg;
 import com.hypixel.hytale.server.core.command.system.arguments.types.ArgTypes;
 import com.hypixel.hytale.server.core.command.system.basecommands.CommandBase;
 import com.hypixel.hytale.server.core.entity.entities.Player;
+import com.hypixel.hytale.server.core.modules.entity.EntityModule;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;
 import com.tobiasgraski.testplugin.utils.CustomNotificationUtil;
 import com.tobiasgraski.testplugin.utils.DuelLoadouts;
@@ -124,6 +129,15 @@ public class DuelCommand extends CommandBase {
         }
 
         DuelRequests.put(target.getUuid(), sender.getUuid(), sender.getUsername(), Optional.of(kitName));
+
+        var idx = SoundEvent.getAssetMap().getIndex("SFX_Battleaxe_T2_Impact");
+        var world = Universe.get().getWorld(sender.getWorldUuid());
+        var store = world.getEntityStore();
+
+        world.execute(() -> {
+            TransformComponent transform = store.getStore().getComponent(sender.getReference(), EntityModule.get().getTransformComponentType());
+            SoundUtil.playSoundEvent3dToPlayer(sender.getReference(), idx, SoundCategory.SFX, transform.getPosition(), store.getStore());
+        });
 
         CustomNotificationUtil.sendNotification(
                 sender,

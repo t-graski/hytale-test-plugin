@@ -6,9 +6,9 @@ import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.Universe;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
-import com.hypixel.hytale.server.core.universe.PlayerRef;
 
 import java.awt.*;
 import java.util.UUID;
@@ -21,16 +21,35 @@ public final class ActiveDuels {
     // key: any player in duel -> session
     private static final ConcurrentHashMap<UUID, DuelSession> byPlayer = new ConcurrentHashMap<>();
 
+    // key: arenaId -> session (occupied)
+    private static final ConcurrentHashMap<Integer, DuelSession> arenaOccupancy = new ConcurrentHashMap<>();
+    
+    private static float yawToFace(double fromX, double fromZ, double toX, double toZ) {
+        double dx = toX - fromX;
+        double dz = toZ - fromZ;
+
+        return (float) Math.atan2(-dx, -dz); // radians
+    }
+
+    private static final Arena[] ARENAS = new Arena[] {
+        new Arena(0, new Vector3f(14, 99, 0),     new Vector3f(-14, 100, 0)),
+        new Arena(1, new Vector3f(-10, 100, -81), new Vector3f(18, 101, -81)),
+        new Arena(2, new Vector3f(163, 97, -30),  new Vector3f(135, 98, -30)),
+        new Arena(3, new Vector3f(122, 99, 91),   new Vector3f(94, 100, 91)),
+    };
+
     public enum EndReason { DEATH, TIMEOUT, FORFEIT }
 
     public static final class DuelSession {
         public final UUID a;
         public final UUID b;
         public final long startMs;
+        public final int arenaId;
 
-        public DuelSession(UUID a, UUID b) {
+        public DuelSession(UUID a, UUID b, int arenaId) {
             this.a = a;
             this.b = b;
+            this.arenaId = arenaId;
             this.startMs = System.currentTimeMillis();
         }
 
@@ -52,36 +71,139 @@ public final class ActiveDuels {
     public static boolean isInDuel(UUID player) {
         return byPlayer.containsKey(player);
     }
+    
+    public static boolean areOpponents(UUID attacker, UUID victim) {
+        DuelSession s = byPlayer.get(attacker);
+        return s != null && s.involves(victim);
+    }
+
 
     public static DuelSession get(UUID player) {
         return byPlayer.get(player);
     }
 
-    /** Start duel; overwrites any existing mapping for these players. */
-    public static void start(UUID a, UUID b) {
-        DuelSession session = new DuelSession(a, b);
+    /** Returns null if no arenas are free. */
+    private static Arena tryClaimFreeArena(DuelSession s) {
+        for (Arena a : ARENAS) {
+            if (arenaOccupancy.putIfAbsent(a.getId(), s) == null) {
+                return a; // successfully claimed
+            }
+        }
+        return null;
+    }
+
+    private static void releaseArena(DuelSession s) {
+        if (s == null) return;
+        arenaOccupancy.remove(s.arenaId, s);
+    }
+
+    private static Arena arenaFor(int arenaId) {
+        for (Arena a : ARENAS) {
+            if (a.getId() == arenaId) return a;
+        }
+        return null;
+    }
+
+    /**
+     * Start duel. Returns true if started, false if:
+     * - either player is already in a duel, OR
+     * - no arena is currently free.
+     */
+    public static boolean start(UUID a, UUID b) {
+        if (a == null || b == null) return false;
+        if (a.equals(b)) return false;
+
+        // Don’t allow starting if either is already in a duel
+        if (isInDuel(a) || isInDuel(b)) {
+        	return false;
+        }
+
+        
+        // Claim an arena atomically
+        DuelSession placeholder = new DuelSession(a, b, -1);
+        Arena arena = tryClaimFreeArena(placeholder);
+        if (arena == null) {
+            PlayerRef aRef = Universe.get().getPlayer(a);
+            PlayerRef bRef = Universe.get().getPlayer(b);
+
+            String msg = "No arenas are currently available. Please try again in a moment.";
+
+            if (aRef != null) aRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
+            if (bRef != null) bRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
+            return false;
+        }
+
+        DuelSession session = new DuelSession(a, b, arena.getId());
+
+        // Swap occupancy mapping placeholder -> real session (best-effort)
+        arenaOccupancy.replace(arena.getId(), placeholder, session);
+
         byPlayer.put(a, session);
         byPlayer.put(b, session);
+
+        // Teleport players into the arena (you can also apply kit/loadout here)
+        teleportIntoArena(session);
+
+        return true;
     }
 
     /**
      * End duel by any participant. Returns the ended session (or null if not in duel).
-     * Removes both players from registry exactly once.
+     * Removes both players from registry exactly once, and frees arena.
      */
     public static DuelSession end(UUID participant, EndReason reason) {
         DuelSession session = byPlayer.remove(participant);
         if (session == null) return null;
 
+        // Remove the other player only if it still maps to the same session
         byPlayer.remove(session.other(participant), session);
+
+        // Free the arena first so new duels can start immediately
+        releaseArena(session);
 
         // Teleport both players out to lobby with fixed orientation (0, -90, 0 degrees)
         teleportOut(session);
 
         notifyEnded(session, participant, reason);
-        
+
         healOut(session);
 
         return session;
+    }
+
+    /** Periodic cleanup for time limit. Call from a tick system or scheduler. */
+    public static void checkExpiredDuels() {
+        byPlayer.forEach((player, session) -> {
+            if (session.isExpired()) {
+                // End once (for whichever key hits first)
+                end(player, EndReason.TIMEOUT);
+            }
+        });
+    }
+
+    private static void teleportIntoArena(DuelSession s) {
+        Arena arena = arenaFor(s.arenaId);
+        if (arena == null) return;
+
+        PlayerRef aRef = Universe.get().getPlayer(s.a);
+        PlayerRef bRef = Universe.get().getPlayer(s.b);
+
+        Vector3f aSpawn = arena.getSpawnA();
+        Vector3f bSpawn = arena.getSpawnB();
+
+        // yaw for each to look at the other (same as your previous behavior)
+        float aYaw = yawToFace(aSpawn.x, aSpawn.z, bSpawn.x, bSpawn.z);
+        float bYaw = yawToFace(bSpawn.x, bSpawn.z, aSpawn.x, aSpawn.z);
+
+        Vector3f rotA = new Vector3f(0.0f, aYaw, 0.0f);
+        Vector3f rotB = new Vector3f(0.0f, bYaw, 0.0f);
+
+        if (aRef != null) {
+            TeleportUtil.teleport(aRef, aSpawn.x, aSpawn.y, aSpawn.z, rotA);
+        }
+        if (bRef != null) {
+            TeleportUtil.teleport(bRef, bSpawn.x, bSpawn.y, bSpawn.z, rotB);
+        }
     }
 
     private static void healOut(DuelSession s) {
@@ -116,7 +238,6 @@ public final class ActiveDuels {
         });
     }
 
-
     private static void teleportOut(DuelSession s) {
         PlayerRef aRef = Universe.get().getPlayer(s.a);
         PlayerRef bRef = Universe.get().getPlayer(s.b);
@@ -127,31 +248,19 @@ public final class ActiveDuels {
 
         Vector3f rot = new Vector3f(pitch, yawRad, roll);
 
-        if (aRef != null) { 
-        	TeleportUtil.teleport(aRef, 182.0, 122.0, 70.0, rot);
-        	DuelLoadouts.clearInventory(resolveOnlinePlayer(aRef));
+        if (aRef != null) {
+            TeleportUtil.teleport(aRef, 108, 100, 91, rot);
+            DuelLoadouts.clearInventory(resolveOnlinePlayer(aRef));
         }
-        if (bRef != null) { 
-        	TeleportUtil.teleport(bRef, 182.0, 122.0, 70.0, rot);
-        	DuelLoadouts.clearInventory(resolveOnlinePlayer(bRef));
-        
+        if (bRef != null) {
+            TeleportUtil.teleport(bRef, 108, 100, 91, rot);
+            DuelLoadouts.clearInventory(resolveOnlinePlayer(bRef));
         }
     }
 
     private static Player resolveOnlinePlayer(PlayerRef ref) {
         if (ref == null || ref.getWorldUuid() == null) return null;
         return (Player) Universe.get().getWorld(ref.getWorldUuid()).getEntity(ref.getUuid());
-    }
-
-
-    /** Periodic cleanup for time limit. Call from a tick system or scheduler. */
-    public static void checkExpiredDuels() {
-        byPlayer.forEach((player, session) -> {
-            if (session.isExpired()) {
-                // End once (for whichever key hits first)
-                end(player, EndReason.TIMEOUT);
-            }
-        });
     }
 
     private static void notifyEnded(DuelSession s, UUID endedBy, EndReason reason) {
@@ -194,5 +303,4 @@ public final class ActiveDuels {
         if (aRef != null) aRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
         if (bRef != null) bRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
     }
-
 }

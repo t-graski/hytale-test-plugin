@@ -152,16 +152,9 @@ public class DuelCommand extends CommandBase {
         DuelLoadouts.applyBasicDuelKit(senderPlayer);
         DuelLoadouts.applyBasicDuelKit(targetPlayer);
 
-        double sx = 188.0, sy = 123.0, sz = 109.0;
-        double tx = 200.0, ty = 123.0, tz = 109.0;
-
-        // yaw for each to look at the other
-        float senderYaw = yawToFace(sx, sz, tx, tz);
-        float targetYaw = yawToFace(tx, tz, sx, sz);
-
         // keep pitch 0 so they look level; roll unused
-        TeleportUtil.teleport(senderPlayer, sx, sy, sz, new com.hypixel.hytale.math.vector.Vector3f(0.0f, senderYaw, 0.0f));
-        TeleportUtil.teleport(targetPlayer, tx, ty, tz, new com.hypixel.hytale.math.vector.Vector3f(0.0f, targetYaw, 0.0f));
+//        TeleportUtil.teleport(senderPlayer, sx, sy, sz, new com.hypixel.hytale.math.vector.Vector3f(0.0f, senderYaw, 0.0f));
+//        TeleportUtil.teleport(targetPlayer, tx, ty, tz, new com.hypixel.hytale.math.vector.Vector3f(0.0f, targetYaw, 0.0f));
 
         senderPlayer.sendMessage(
                 Message.raw(target.getUsername()).bold(true).color(Color.GREEN)

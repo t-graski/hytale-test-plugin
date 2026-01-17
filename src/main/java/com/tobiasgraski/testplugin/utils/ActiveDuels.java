@@ -38,10 +38,10 @@ public final class ActiveDuels {
     }
 
     private static final Arena[] ARENAS = new Arena[]{
-            new Arena(0, new Vector3f(14, 99, 0), new Vector3f(-14, 100, 0)),
-            new Arena(1, new Vector3f(-10, 100, -81), new Vector3f(18, 101, -81)),
-            new Arena(2, new Vector3f(163, 97, -30), new Vector3f(135, 98, -30)),
-            new Arena(3, new Vector3f(122, 99, 91), new Vector3f(94, 100, 91)),
+            new Arena(0, new Vector3f(14, 99, 0), new Vector3f(-14, 101, 0)),
+            new Arena(1, new Vector3f(-10, 100, -81), new Vector3f(18, 102, -81)),
+            new Arena(2, new Vector3f(163, 97, -30), new Vector3f(135, 99, -30)),
+            new Arena(3, new Vector3f(122, 99, 91), new Vector3f(94, 101, 91)),
     };
 
     public enum EndReason {DEATH, TIMEOUT, FORFEIT}
@@ -260,11 +260,11 @@ public final class ActiveDuels {
         Vector3f rot = new Vector3f(pitch, yawRad, roll);
 
         if (aRef != null) {
-            TeleportUtil.teleport(aRef, 108, 100, 91, rot);
+            TeleportUtil.teleport(aRef, 108, 101, 91, rot);
             DuelLoadouts.clearInventory(resolveOnlinePlayer(aRef));
         }
         if (bRef != null) {
-            TeleportUtil.teleport(bRef, 108, 100, 91, rot);
+            TeleportUtil.teleport(bRef, 108, 101, 91, rot);
             DuelLoadouts.clearInventory(resolveOnlinePlayer(bRef));
         }
     }

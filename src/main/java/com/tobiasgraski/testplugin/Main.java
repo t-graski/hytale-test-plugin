@@ -16,6 +16,7 @@ import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
 import com.tobiasgraski.testplugin.listeners.BlockPlaceSystem;
 import com.tobiasgraski.testplugin.listeners.DuelDeathSystem;
 import com.tobiasgraski.testplugin.listeners.DuelDisconnectListener;
+import com.tobiasgraski.testplugin.listeners.DuelNoDropSystem;
 import com.tobiasgraski.testplugin.listeners.DuelOnlyPvPSystem;
 import com.tobiasgraski.testplugin.listeners.LobbyInfiniteStaminaSystem;
 import com.tobiasgraski.testplugin.utils.ActiveDuels;
@@ -49,6 +50,7 @@ public class Main extends JavaPlugin {
         getEntityStoreRegistry().registerSystem((ISystem) new DuelDeathSystem());
         getEntityStoreRegistry().registerSystem((ISystem) new DuelOnlyPvPSystem());
         getEntityStoreRegistry().registerSystem((ISystem)new LobbyInfiniteStaminaSystem());
+        getEntityStoreRegistry().registerSystem(new DuelNoDropSystem());
         getEventRegistry().registerGlobal(PlayerDisconnectEvent.class, DuelDisconnectListener::onPlayerDisconnect);
     }
 

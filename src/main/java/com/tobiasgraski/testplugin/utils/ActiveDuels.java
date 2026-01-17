@@ -343,7 +343,7 @@ public final class ActiveDuels {
                     true
             );
 
-            var idx = SoundEvent.getAssetMap().getIndex("Portal_Open_01");
+            var idx = SoundEvent.getAssetMap().getIndex("SFX_Portal_Neutral_Open");
             var world = Universe.get().getWorld(aRef.getWorldUuid());
             var store = world.getEntityStore();
 

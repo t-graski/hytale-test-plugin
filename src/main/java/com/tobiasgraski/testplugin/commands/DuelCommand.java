@@ -44,7 +44,7 @@ public class DuelCommand extends CommandBase {
         String action = ctx.get(actionArg).toLowerCase();
 
         switch (action) {
-            case "request" -> handleRequest(executorRef, otherRef, Optional.of(ctx.get(kitArg)));
+        case "request" -> handleRequest(executorRef, otherRef, Optional.ofNullable(ctx.get(kitArg)));
             case "accept" -> handleAccept(ctx, executorRef, otherRef);
             default -> executor.sendMessage(
                     Message.raw("Usage: ").color(Color.RED)
@@ -59,12 +59,34 @@ public class DuelCommand extends CommandBase {
         if (ref == null || ref.getWorldUuid() == null) return null;
         return (Player) Universe.get().getWorld(ref.getWorldUuid()).getEntity(ref.getUuid());
     }
+    
+    private static final String[] VALID_KITS = { "default", "barbarian" };
+    
+    private static boolean isValidKit(String kitName) {
+        if (kitName == null) return false;
+        String k = kitName.trim().toLowerCase();
+        for (String v : VALID_KITS) {
+            if (v.equals(k)) return true;
+        }
+        return false;
+    }
 
-    private static float yawToFace(double fromX, double fromZ, double toX, double toZ) {
-        double dx = toX - fromX;
-        double dz = toZ - fromZ;
-
-        return (float) Math.atan2(-dx, -dz); // radians
+    private static String validKitsString() {
+        return String.join(", ", VALID_KITS);
+    }
+    
+    private static String normalizeKit(Optional<String> kitOpt) {
+        if (kitOpt == null || kitOpt.isEmpty()) return "Default";
+        String k = kitOpt.get();
+        if (k == null) return "Default";
+        k = k.trim();
+        return k.isEmpty() ? "Default" : k;
+    }
+    
+    private static String normalizeKit(String kit) {
+        if (kit == null) return "Default";
+        kit = kit.trim();
+        return kit.isEmpty() ? "Default" : kit;
     }
 
     private void handleRequest(PlayerRef sender, PlayerRef target, Optional<String> kit) {
@@ -78,7 +100,6 @@ public class DuelCommand extends CommandBase {
             return;
         }
 
-        // NEW: block if either is already in an active duel
         if (ActiveDuels.isInDuel(sender.getUuid())) {
             sender.sendMessage(Message.raw("You are already in an active duel").bold(true).color(Color.RED));
             return;
@@ -89,25 +110,50 @@ public class DuelCommand extends CommandBase {
             return;
         }
 
-        DuelRequests.put(target.getUuid(), sender.getUuid(), sender.getUsername(), kit);
+        String kitName = normalizeKit(kit);
+        
+        if (!isValidKit(kitName)) {
+            sender.sendMessage(
+                    Message.raw("Unknown kit: ").color(Color.RED)
+                            .insert(kitName).bold(true).color(Color.YELLOW)
+                            .insert(". Valid kits: ").color(Color.RED)
+                            .insert(validKitsString()).color(Color.GRAY)
+            );
+            return;
+        }
 
+        DuelRequests.put(target.getUuid(), sender.getUuid(), sender.getUsername(), Optional.of(kitName));
+
+        // Sender sees kit
         sender.sendMessage(
                 Message.raw("You sent a duel request to ").color(Color.RED)
                         .insert(target.getUsername()).bold(true).color(Color.GREEN)
+                        .insert(" ").color(Color.RED)
+                        .insert("[Kit: ").color(Color.GRAY)
+                        .insert(kitName).bold(true).color(Color.YELLOW)
+                        .insert("]").color(Color.GRAY)
         );
 
+        // Target sees kit
         target.sendMessage(
                 Message.raw(sender.getUsername()).bold(true).color(Color.GREEN)
-                        .insert(" sent you a duel request. ").color(Color.RED)
+                        .insert(" sent you a duel request ").color(Color.RED)
+                        .insert("[Kit: ").color(Color.GRAY)
+                        .insert(kitName).bold(true).color(Color.YELLOW)
+                        .insert("]").color(Color.GRAY)
+                        .insert(". ").color(Color.RED)
                         .insert("Type ").color(Color.GRAY)
                         .insert("/duel accept " + sender.getUsername()).bold(true).color(Color.YELLOW)
-                        .insert(" to accept. This request expires in " + DuelRequests.EXPIRATION_TIME_MS / 1000 + " seconds")
-                        .bold(true).color(Color.GREEN)
+                        .insert(" to accept. ").color(Color.RED)
+                        .insert("This request expires in " + DuelRequests.EXPIRATION_TIME_MS / 1000 + " seconds").color(Color.GREEN)
         );
     }
 
+
     private void handleAccept(CommandContext ctx, PlayerRef target, PlayerRef sender) {
         DuelRequests.PendingDuel pending = DuelRequests.consume(target.getUuid());
+        String kitName = normalizeKit(pending.kit);
+        
         if (pending == null) {
             target.sendMessage(Message.raw("You have no pending duel requests.").color(Color.RED));
             return;
@@ -151,8 +197,30 @@ public class DuelCommand extends CommandBase {
 
         ActiveDuels.start(target.getUuid(), sender.getUuid());
 
-        DuelLoadouts.applyBasicDuelKit(senderPlayer);
-        DuelLoadouts.applyBasicDuelKit(targetPlayer);
+        
+        switch (kitName.trim().toLowerCase()) {
+        case "default" -> {
+            DuelLoadouts.applyBasicDuelKit(senderPlayer);
+            DuelLoadouts.applyBasicDuelKit(targetPlayer);
+        }
+
+        case "barbarian" -> {
+            DuelLoadouts.applyBarbarianDuelKit(senderPlayer);
+            DuelLoadouts.applyBarbarianDuelKit(targetPlayer);
+        }
+
+        default -> {
+            // fallback if someone typed an unknown kit
+            DuelLoadouts.applyBasicDuelKit(senderPlayer);
+            DuelLoadouts.applyBasicDuelKit(targetPlayer);
+
+            targetPlayer.sendMessage(
+                    Message.raw("Unknown kit '" + kitName + "'. Using Default kit.")
+                            .color(Color.RED)
+            );
+        }
+    }
+
 
         // keep pitch 0 so they look level; roll unused
 //        TeleportUtil.teleport(senderPlayer, sx, sy, sz, new com.hypixel.hytale.math.vector.Vector3f(0.0f, senderYaw, 0.0f));

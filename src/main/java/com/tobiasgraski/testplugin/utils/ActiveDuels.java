@@ -308,12 +308,12 @@ public final class ActiveDuels {
 
         if (aRef != null) {
             aRef.sendMessage(Message.raw(msg).bold(true).color(Color.RED));
-            EventTitleUtil.showEventTitleToUniverse(
-                    Message.raw("The duel has ended!").bold(true).color(Color.RED),
-                    Message.raw(msg),
-                    true,
-                    "ui/icons/announcement.png",
-                    4.0f, 1.5f, 1.5f);
+//            EventTitleUtil.showEventTitleToUniverse(
+//                    Message.raw("The duel has ended!").bold(true).color(Color.RED),
+//                    Message.raw(msg),
+//                    true,
+//                    "ui/icons/announcement.png",
+//                    4.0f, 1.5f, 1.5f);
            
             EventTitleUtil.showEventTitleToPlayer(
                     aRef,

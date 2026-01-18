@@ -29,12 +29,13 @@ public class DuelCommand extends CommandBase {
     private final RequiredArg<String> actionArg;
     private final RequiredArg<PlayerRef> playerArg;
     private final OptionalArg<String> kitArg;
+    
 
     public DuelCommand() {
         super("Duel", "Duel commands: /duel request <target> [kit], /duel accept <sender>");
         this.setPermissionGroup(GameMode.Adventure);
 
-        actionArg = withRequiredArg("action", "request | accept", ArgTypes.STRING);
+        actionArg = withRequiredArg("request/accept", "request | accept", ArgTypes.STRING);
         playerArg = withRequiredArg("player", "target (request) or sender (accept)", ArgTypes.PLAYER_REF);
         kitArg = withOptionalArg("kit", "The kit to be played with", ArgTypes.STRING);
     }
@@ -190,11 +191,6 @@ public class DuelCommand extends CommandBase {
         DuelRequests.PendingDuel pending = DuelRequests.consume(target.getUuid());
         String kitName = normalizeKit(pending.kit);
 
-        if (pending == null) {
-            target.sendMessage(Message.raw("You have no pending duel requests.").color(Color.RED));
-            return;
-        }
-
         boolean matches =
                 pending.senderUuid.equals(sender.getUuid()) ||
                         pending.senderName.equalsIgnoreCase(sender.getUsername());
@@ -261,11 +257,6 @@ public class DuelCommand extends CommandBase {
                 );
             }
         }
-
-
-        // keep pitch 0 so they look level; roll unused
-//        TeleportUtil.teleport(senderPlayer, sx, sy, sz, new com.hypixel.hytale.math.vector.Vector3f(0.0f, senderYaw, 0.0f));
-//        TeleportUtil.teleport(targetPlayer, tx, ty, tz, new com.hypixel.hytale.math.vector.Vector3f(0.0f, targetYaw, 0.0f));
 
         senderPlayer.sendMessage(
                 Message.raw(target.getUsername()).bold(true).color(Color.GREEN)

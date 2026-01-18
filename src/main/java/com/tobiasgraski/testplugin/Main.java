@@ -11,6 +11,7 @@ import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.tobiasgraski.testplugin.commands.DuelCommand;
+import com.tobiasgraski.testplugin.commands.LobbyCommand;
 import com.tobiasgraski.testplugin.commands.PendingDuelsCommand;
 import com.tobiasgraski.testplugin.commands.TitleHologramCommand;
 import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
@@ -67,6 +68,8 @@ public class Main extends JavaPlugin {
     private void registerHello() {
         getCommandRegistry().registerCommand(new DuelCommand());
         getCommandRegistry().registerCommand(new PendingDuelsCommand());
-        getCommandRegistry().registerCommand(new TitleHologramCommand());
+        // Commented because these holograms are not currently deletable
+        //getCommandRegistry().registerCommand(new TitleHologramCommand());
+        getCommandRegistry().registerCommand(new LobbyCommand());
     }
 }

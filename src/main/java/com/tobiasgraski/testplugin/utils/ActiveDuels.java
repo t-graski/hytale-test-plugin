@@ -38,10 +38,10 @@ public final class ActiveDuels {
     }
 
     private static final Arena[] ARENAS = new Arena[]{
-            new Arena(0, new Vector3f(14, 99, 0), new Vector3f(-14, 101, 0)),
-            new Arena(1, new Vector3f(-10, 100, -81), new Vector3f(18, 102, -81)),
-            new Arena(2, new Vector3f(163, 97, -30), new Vector3f(135, 99, -30)),
-            new Arena(3, new Vector3f(122, 99, 91), new Vector3f(94, 101, 91)),
+            new Arena(0, new Vector3f(12, 101, 0), new Vector3f(-12, 101, 0)),
+            new Arena(1, new Vector3f(-8, 102, -81), new Vector3f(16, 102, -81)),
+            new Arena(2, new Vector3f(161, 99, -30), new Vector3f(137, 99, -30)),
+            new Arena(3, new Vector3f(120, 101, 91), new Vector3f(96, 101, 91)),
     };
 
     public enum EndReason {DEATH, TIMEOUT, FORFEIT}

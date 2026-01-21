@@ -7,13 +7,14 @@ import com.hypixel.hytale.common.plugin.PluginIdentifier;
 import com.hypixel.hytale.component.system.ISystem;
 import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
+import com.hypixel.hytale.server.core.modules.accesscontrol.provider.HytaleBanProvider;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.plugin.PluginManager;
 import com.tobiasgraski.testplugin.commands.DuelCommand;
 import com.tobiasgraski.testplugin.commands.LobbyCommand;
 import com.tobiasgraski.testplugin.commands.PendingDuelsCommand;
-import com.tobiasgraski.testplugin.commands.TitleHologramCommand;
+import com.tobiasgraski.testplugin.commands.moderation.TempBanCommand;
 import com.tobiasgraski.testplugin.listeners.BlockBreakSystem;
 import com.tobiasgraski.testplugin.listeners.BlockPlaceSystem;
 import com.tobiasgraski.testplugin.listeners.DuelDeathSystem;
@@ -66,10 +67,12 @@ public class Main extends JavaPlugin {
     }
 
     private void registerHello() {
+        HytaleBanProvider banProvider = new HytaleBanProvider();
         getCommandRegistry().registerCommand(new DuelCommand());
         getCommandRegistry().registerCommand(new PendingDuelsCommand());
         // Commented because these holograms are not currently deletable
         //getCommandRegistry().registerCommand(new TitleHologramCommand());
         getCommandRegistry().registerCommand(new LobbyCommand());
+        getCommandRegistry().registerCommand(new TempBanCommand(banProvider));
     }
 }
